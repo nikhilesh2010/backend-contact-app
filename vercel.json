@@ -2,8 +2,8 @@
   "version": 2,
   "functions": {
     "api/server.js": {
-      "memory": 1024,  // Optional: set memory limit (default is 1024 MB)
-      "maxDuration": 60 // Optional: set max duration (in seconds)
+      "memory": 1024,
+      "maxDuration": 60 
     }
   },
   "routes": [
