@@ -32,7 +32,7 @@ const createContact = asyncHandler(async (req, res) => {
         throw new Error('All fields are required');
     }
     const contact = await Contact.create({ name, email, phone, user_id: req.user.id });
-    res.status(201).json(contact);
+    res.status(200).json(contact);
 });
 
 // @desc Update contact

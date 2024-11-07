@@ -2,17 +2,15 @@ const express = require('express');
 const errorHandler = require('./middleware/errorHandler');
 const connectDb = require('./config/dbConnection');
 const dotenv = require('dotenv').config();
+const cors = require('cors');  // Import the cors package
 
 const app = express();
 
 connectDb();
 const port = process.env.PORT || 5000;
 
-// app.get('/api/contacts', (req, res) => {
-//     // res.send('Get all conacts');
-//     // res.json({message: 'Get all conacts'});
-//     res.status(200).json({message: 'Get all conacts'});
-// });
+// Enable CORS for all routes
+app.use(cors());  // Allows all origins by default, you can configure it as needed
 
 app.use(express.json());
 app.use("/api/contacts", require('./routes/contactRoutes'));
