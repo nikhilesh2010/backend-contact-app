@@ -7,14 +7,25 @@ const cors = require('cors');
 
 const app = express();
 
-connectDb();
+let isDbConnected = false;
 
-app.use(cors());
+// Lazy-load the database connection on the first request
+app.use(async (req, res, next) => {
+    if (!isDbConnected) {
+        await connectDb();
+        isDbConnected = true;
+    }
+    next();
+});
+
+// Enable CORS
+app.use(cors({ origin: process.env.ALLOWED_ORIGIN || '*' }));
+
+// Middleware
 app.use(express.json());
 app.use("/api/contacts", require('../routes/contactRoutes'));
 app.use("/api/users", require('../routes/userRoutes'));
 app.use(errorHandler);
 
-// Export the serverless function
-module.exports = app;
+// Export as a serverless function
 module.exports.handler = serverless(app);
