@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModel'); 
 
 // @desc Register the user
-// @rote POST /api/users/register
+// @route POST /api/users/register
 // @access public
 const registerUser = asyncHandler(async (req, res) => {
     // Register user
@@ -28,19 +28,16 @@ const registerUser = asyncHandler(async (req, res) => {
     const user = await User.create({ username, email, password: hashedPassword });
     console.log(`User created ${user}`);
 
-    if(user) {
-        res.status(201).json({ _id: user._id, email: user.email });
+    if (user) {
+        return res.status(201).json({ _id: user._id, email: user.email });
     } else {
         res.status(400)
         throw new Error('User data is not valid');
     }
-    
-    // Save user to the database
-    res.status(200).json({ message: 'User registered successfully' });
 } );
 
 // @desc Login the user
-// @rote POST /api/users/login
+// @route POST /api/users/login
 // @access public
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
@@ -50,22 +47,22 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new Error('All fields are required');
     }
 
-    const userAvailable = await User.findOne({email})
-    // Compare password with hashed password
-    if (userAvailable && (await bcrypt.compare(password, userAvailable.password))) {
+    const user = await User.findOne({ email });
+
+    if (user && (await bcrypt.compare(password, user.password))) {
+        // Ensure access token secret is defined
+        if (!process.env.ACCESS_TOKEN_SECRET) {
+            throw new Error('Token secret is missing');
+        }
+
         // Generate JWT token
         const accessToken = jwt.sign(
-            { 
-                user: {
-                    username: userAvailable.username,
-                    email: userAvailable.email,
-                    id: userAvailable._id
-                }
-            },
-            process.env.ACCESS_TOKEN_SECRET, 
+            { user: { username: user.username, email: user.email, id: user._id } },
+            process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: '1d' }
         );
-        res.status(200).json({ accessToken });
+
+        return res.status(200).json({ accessToken });
     } else {
         res.status(401);
         throw new Error('Invalid credentials');
@@ -73,7 +70,7 @@ const loginUser = asyncHandler(async (req, res) => {
 } );
 
 // @desc Get user profile
-// @rote GET /api/users/profile
+// @route GET /api/users/profile
 // @access private
 const getUserProfile = asyncHandler(async (req, res) => {
     // Get current user
