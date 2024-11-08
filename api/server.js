@@ -27,5 +27,5 @@ app.use("/api/contacts", require('../routes/contactRoutes'));
 app.use("/api/users", require('../routes/userRoutes'));
 app.use(errorHandler);
 
-// Export as a serverless function
-module.exports.handler = serverless(app);
+// Export the serverless function as the default export
+module.exports = serverless(app);
