@@ -49,24 +49,35 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const user = await User.findOne({ email });
 
-    if (user && (await bcrypt.compare(password, user.password))) {
-        // Ensure access token secret is defined
-        if (!process.env.ACCESS_TOKEN_SECRET) {
-            throw new Error('Token secret is missing');
-        }
-
-        // Generate JWT token
-        const accessToken = jwt.sign(
-            { user: { username: user.username, email: user.email, id: user._id } },
-            process.env.ACCESS_TOKEN_SECRET,
-            { expiresIn: '1d' }
-        );
-
-        return res.status(200).json({ accessToken });
-    } else {
+    // If the user is not found, return invalid credentials
+    if (!user) {
         res.status(401);
         throw new Error('Invalid credentials');
     }
+
+    // Compare the provided password with the stored password
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    // If the password is invalid, return invalid credentials
+    if (!passwordMatch) {
+        res.status(401);
+        throw new Error('Invalid credentials');
+    }
+
+    // Ensure access token secret is defined
+    if (!process.env.ACCESS_TOKEN_SECRET) {
+        throw new Error('Token secret is missing');
+    }
+
+    // Generate JWT token
+    const accessToken = jwt.sign(
+        { user: { username: user.username, email: user.email, id: user._id } },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: '1d' }
+    );
+
+    // Return the access token
+    return res.status(200).json({ accessToken });
 } );
 
 // @desc Get user profile
